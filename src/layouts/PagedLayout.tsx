@@ -5,6 +5,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import { AuthContext } from "../context/AuthContext";
 import AdminPage from "../pages/AdminPage";
 import Login from "../pages/Login";
+import OrderPage from "../pages/OrderPage";
 import Register from "../pages/Register";
 
 export default function PagedLayout() {
@@ -15,11 +16,10 @@ export default function PagedLayout() {
         <Route path="/admin" element={<ProtectedRoute
                 isAuth={ctx.user != null && ctx.user.roles.includes("ROLE_ADMIN")}
                 element={<AdminPage />}
-                redirect="/login"
               />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
+        <Route path="/orders" element={<ProtectedRoute isAuth={ctx.user != null} element={<OrderPage />} />} />
       </Routes>
     </div>
   );

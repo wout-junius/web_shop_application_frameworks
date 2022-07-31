@@ -18,6 +18,7 @@ const CartContext = createContext<ICartContext>({
   cart: [],
   addProduct: (product: Product) => {},
   removeProduct: () => {},
+  clearCart: () => {},
 });
 
 function cartReducer(
@@ -33,7 +34,7 @@ function cartReducer(
     case "RESET":
       return {
         ...state,
-        cart: null,
+        cart: [],
       };
     default:
       return state;
@@ -68,9 +69,14 @@ function CartProvider(props: any) {
     localStorage.setItem("cart", JSON.stringify(cartData));
   };
 
+  const clearCart = () => {
+    dispatch({
+      type: "RESET",
+    });
+  }
   return (
     <CartContext.Provider
-      value={{ cart: state.cart, addProduct, removeProduct }}
+      value={{ cart: state.cart, addProduct, removeProduct, clearCart }}
       {...props}
     />
   );
@@ -82,4 +88,5 @@ interface ICartContext {
   cart: Product[];
   addProduct: (product: Product) => void;
   removeProduct: (product: Product) => void;
+  clearCart: () => void;
 }

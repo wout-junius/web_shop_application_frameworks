@@ -1,6 +1,7 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Divider, Drawer, Row } from "antd";
 import React, { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 
 export default function CartDrawer({
@@ -10,7 +11,24 @@ export default function CartDrawer({
   visible: boolean;
   onClose: () => void;
 }) {
-  const ctx = useContext(CartContext);
+  const cartCtx = useContext(CartContext);
+  const AuthCtx = useContext(AuthContext);
+
+  const saveSale = () => {
+    fetch(`/sale/save/${AuthCtx.user?.sub}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        products: cartCtx.cart,
+      }),
+    }).then(() => {
+      cartCtx.clearCart();
+      onClose();
+    });
+  }
+
   return (
     <Drawer
       title="Shopping cart"
@@ -18,27 +36,40 @@ export default function CartDrawer({
       onClose={onClose}
       visible={visible}
     >
-      {ctx.cart.map((product, i) => (
+      {cartCtx.cart.map((product, i) => (
         <div key={i}>
-          <div style={{
-            display: "flex",
-            width: "100%",
-            justifyContent: "space-between",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "space-between",
+            }}
+          >
             <div>
               <h3>{product.name}</h3>
               <p>{product.description}</p>
               <p>{product.price}</p>
             </div>
-            <Button danger icon={<DeleteOutlined />} onClick={() => {
-              ctx.removeProduct(product);
-            }}>Remove</Button>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                cartCtx.removeProduct(product);
+              }}
+            >
+              Remove
+            </Button>
           </div>
           <Divider />
         </div>
       ))}
 
-      <Button type="primary">Checkout</Button>
+      <Button
+        type="primary"
+        onClick={saveSale}
+      >
+        Checkout
+      </Button>
     </Drawer>
   );
 }

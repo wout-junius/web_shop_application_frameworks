@@ -1,9 +1,58 @@
-import { InfoCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { BackTop, Button, Card, Segmented } from "antd";
-import Meta from "antd/lib/card/Meta";
-import React from "react";
+import { BackTop, Segmented } from "antd";
+import { SegmentedLabeledOption } from "antd/lib/segmented";
+import React, { useEffect, useState } from "react";
+import ProductCard from "../components/ProductCard";
+import { Product } from '../Entities/Product';
 
 export default function BrowsePage() {
+  const [productsToShow, setProductsToShow] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [tagsSegment, setTagsSegment] = useState<SegmentedLabeledOption[]>([]);
+
+  const getData = () => {
+    fetch("/product")
+      .then((res) => res.json())
+      .then((products) => {
+        setProductsToShow(products);
+        setProducts(products);
+      });
+    fetch("/tag")
+      .then((res) => res.json())
+      .then((tags) => {
+        let tempSegment: SegmentedLabeledOption[] = [
+          {
+            label: "All",
+            value: 0,
+          },
+        ];
+        tags.forEach((tag: { name: string }) => {
+          tempSegment.push({
+            label: tag.name,
+            value: tag.name,
+          });
+        });
+        setTagsSegment(tempSegment);
+      });
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+
+  const filterTags = (value: string | number) => {
+    if (value === 0) {
+      setProductsToShow(products);
+    } else {
+      setProductsToShow(
+        products.filter((product: Product) => {
+          return product.tags?.some((tag: { name: string }) => tag.name === value);
+        })
+      );
+    }
+  }
+
+
   return (
     <div
       style={{
@@ -13,14 +62,7 @@ export default function BrowsePage() {
       }}
     >
       <BackTop />
-      <Segmented
-        options={[
-          {label: "Alles", value: 0},
-          {label: "groenten", value: 1},
-          {label: "fruit", value: 2},
-          {label: "bouw", value: 3}
-        ]}
-      />
+      <Segmented defaultValue={0} options={tagsSegment} onChange={filterTags} />
       <div
         className="CardList"
         style={{
@@ -33,31 +75,10 @@ export default function BrowsePage() {
           padding: "1em",
         }}
       >
-        {genCardList("Appels")}
+        {productsToShow.map((product: Product) => (
+          <ProductCard product={product} loading={false} key={product.id} />
+        ))}
       </div>
     </div>
   );
-
-  function genCardList(name: string) {
-    var loading = false;
-    return Array.from({ length: 30 }).map(() => (
-      <Card
-        key={Math.random()}
-        style={{
-          margin: "1em",
-        }}
-        loading={loading}
-        hoverable
-      >
-        <Meta
-          title={name}
-          style={{
-            marginBottom: ".5rem",
-          }}
-        />
-        <b>Beschrijving:</b> Alstom <br />
-        <b>Prijs:</b> 5$/kg <br />
-      </Card>
-    ));
-  }
 }

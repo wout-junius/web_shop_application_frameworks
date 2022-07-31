@@ -1,5 +1,6 @@
 import React, { createContext, useReducer } from "react";
 import jwtDecode from "jwt-decode";
+import { JwtUser } from "../Entities/JwtUser";
 
 //Tutorial https://www.youtube.com/watch?v=0Z68AHS011Y
 
@@ -11,12 +12,15 @@ if (localStorage.getItem("token")) {
   const decodedToken: any = jwtDecode(localStorage.getItem("token")!);
   if (decodedToken.exp * 1000 < Date.now()) {
     localStorage.removeItem("token");
-  } else {
-    initialState.user = decodedToken;    
+  } else {    
+    initialState.user = {
+      ...decodedToken,
+      token: localStorage.getItem("token")!,
+    };    
   }
 }
 
-const AuthContext = createContext({
+const AuthContext = createContext<IAuthContext>({
   user: null,
   login: (jwt: string) => {},
   logout: () => {},
@@ -47,8 +51,8 @@ function AuthProvider(props: any) {
 
   const login = (jwt: string) => {
     localStorage.setItem("token", jwt);
-    const userData: any = jwtDecode(jwt);
-    userData.token = jwt;
+    const userData: JwtUser = jwtDecode(jwt);
+    userData.token = jwt;    
     dispatch({
       type: "LOGIN",
       payload: userData,
@@ -71,3 +75,12 @@ function AuthProvider(props: any) {
 }
 
 export { AuthContext, AuthProvider };
+
+
+
+
+interface IAuthContext {
+  user?: JwtUser | null,
+  login: (jwt: string) => void,
+  logout: () => void,
+}

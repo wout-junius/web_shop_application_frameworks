@@ -1,65 +1,27 @@
-import React, { useContext } from "react";
+import React from "react";
 import "./App.css";
 import "antd/dist/antd.min.css";
 
-import { Button, Dropdown, Layout, Menu } from "antd";
+import {Layout } from "antd";
 import MyRouter from "./MyRouter";
-import { ApiOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons";
-import { NavLink, useNavigate } from "react-router-dom";
-import { AuthContext } from "./context/AuthContext";
+import AppHeader from "./components/AppHeader";
+import CartDrawer from "./components/CartDrawer";
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 
 export default function App() {
-  const navigate = useNavigate();
-  const ctx = useContext(AuthContext);
-  const menuPressed = (item: any) => {
-    if (item.key === "Logout") {
-      ctx.logout();
-      navigate("/");
-    } else {
-      navigate(item.key);
-    }
-  };
+  const [cartVisible, setCartVisible] = React.useState(false);
+  const openCart = () => {
+    setCartVisible(true);
+  }
+  const closeCart = () => {
+    setCartVisible(false);
+  }
   return (
     <Layout className="layout">
-      <Header
-        style={{
-          zIndex: 1,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1em",
-        }}
-      >
-        <a onClick={() => navigate("/")}>
-          <h1
-            style={{
-              width: "100%",
-              color: "white",
-            }}
-          >
-            Webshop of all your needs
-          </h1>
-        </a>
-        {ctx.user ? (
-          <Dropdown overlay={<Menu onClick={menuPressed} items={items} />}>
-            <Button type="link" onClick={(e) => e.preventDefault()}>
-              <UserOutlined
-                style={{
-                  fontSize: "1.5em",
-                  marginRight: "0.5em",
-                  color: "#fff",
-                }}
-              />
-            </Button>
-          </Dropdown>
-        ) : (
-          loginMenu
-        )}
-      </Header>
+      <AppHeader openCart={openCart} />
       <Content style={{ padding: "0 50px", margin: "16px 0" }}>
+        <CartDrawer visible={cartVisible} onClose={closeCart} />
         <MyRouter />
       </Content>
       <Footer style={{ textAlign: "center" }}>
@@ -68,36 +30,5 @@ export default function App() {
     </Layout>
   );
 }
-const items = [
-  {
-    label: "Admin",
-    key: "/admin",
-    icon: <UserOutlined />,
-  },
-  {
-    label: "Product management",
-    key: "/api/management",
-    icon: <ApiOutlined />,
-  },
-  {
-    label: "Logout",
-    key: "Logout",
-    icon: <ApiOutlined />,
-  },
-];
 
-const loginMenu = (
-  <div>
-    <NavLink
-      to="/login"
-      style={{
-        marginRight: "0.5em",
-      }}
-    >
-      <Button type="primary">Login</Button>
-    </NavLink>
-    <NavLink to="/register">
-      <Button type="primary">Register</Button>
-    </NavLink>
-  </div>
-);
+

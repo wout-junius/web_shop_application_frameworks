@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 
 import "./../GeneralPage.css";
 import { useNavigate } from "react-router-dom";
-import LoginForm from "../components/LoginForm";
+import LoginForm from "../components/forms/LoginForm";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
@@ -14,14 +14,20 @@ export default function Login() {
     let data = new FormData();
     data.append("username", values.username)
     data.append("password", values.password)
-    fetch(process.env.REACT_APP_API_URI + "/login", {
+    fetch("/login", {
       method: "POST",
       body: data
-    }).then(res => res.json).then((data) => {
-      console.log(data);
-    }).catch(error => {
-      console.log(error);
+    }).then(res => res.json())
+    .then((data: {refresh_token: string, acces_token: string, error: string}) => {
+      if(data.error) {
+        setErrorMessage(data.error)
+      }else{
+      ctx.login(data.acces_token);
+      navigate("/");
+      }
       
+    }).catch(error => {
+      setErrorMessage(error);
     })
   };
   return (
